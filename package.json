@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "esbuild src/index.ts --bundle --outfile=static/_worker.js"
+    "build": "esbuild src/index.ts --bundle --outfile=static/_worker.js; cat static/_worker.ts"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241205.0",
