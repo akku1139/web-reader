@@ -8,17 +8,17 @@ const app = new Hono()
   validator("query", (v, c) => {
     const url = v["url"]
     if (!url) {
-      return c.text("error", 400)
+      return c.text("error (URL is not set)", 400)
     }
     if (Array.isArray(url)) {
-      return c.text("error", 400)
+      return c.text("error (Multiple URLs are not allowed)", 400)
     }
     if (!URL.canParse(url)) {
       return {
         url
       }
     }
-    return c.text("error", 400)
+    return c.text("error (Cannot parse URL)", 400)
   }),
   async c => {
     const { url } = c.req.valid("query")
