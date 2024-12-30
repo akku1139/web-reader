@@ -18,3 +18,11 @@ https://github.com/mozilla/readability
 ### WASM
 
 https://blog.chairoi.me/entry/cloudflare-workers-go-readability-wasm
+
+## HTML Parser
+
+https://github.com/fb55/htmlparser2/
+
+https://github.com/taoqf/node-html-parser
+
+https://github.com/justinwilaby/sax-wasm
