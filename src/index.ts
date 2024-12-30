@@ -24,15 +24,17 @@ const app = new Hono()
   async c => {
     const { url } = c.req.valid("query")
     const rawDoc = await (await fetch(url)).text()
-    const document = htmlparser2.parseDocument(rawDoc)
-    //const document = htmlparser.parse(rawDoc)
+    const doc = htmlparser2.parseDocument(rawDoc)
+    //const doc = htmlparser.parse(rawDoc)
 
-    const doc = {
-      documentElement: document,
-      ...document,
+    console.log("debug document:", doc)
+
+    const document = {
+      documentElement: doc,
+      ...doc,
     }
 
-    const article = new Readability(doc).parse()!
+    const article = new Readability(document).parse()!
 
     return c.html(article.content)
   }
