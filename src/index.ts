@@ -25,10 +25,6 @@ const app = new Hono()
     const rawDoc = await (await fetch(url)).text()
     const doc = htmlparser.parse(rawDoc)
 
-    // console.log(doc.getElementsByTagName, typeof doc.getElementsByTagName, doc.firstElementChild)
-
-    // console.log(doc.getElementsByTagName("img"))
-
     const document = {
       // ...doc.firstElementChild,
       // documentElement: doc.firstElementChild,
@@ -39,7 +35,6 @@ const app = new Hono()
     }
 
     const read = new Readability(document)
-    console.log(read._doc)
     const article = read.parse()!
 
     return c.html(article.content)
