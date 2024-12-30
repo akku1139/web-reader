@@ -28,15 +28,15 @@ const app = new Hono()
     //const doc = htmlparser2.parseDocument(rawDoc)
     const doc = htmlparser.parse(rawDoc)
 
-    console.log(doc.getElementsByTagName, typeof doc.getElementsByTagName, doc.firstElementChild)
+    // console.log(doc.getElementsByTagName, typeof doc.getElementsByTagName, doc.firstElementChild)
 
-    const document = {
-      ...doc,
-      documentElement: doc,
-      firstChild: doc.firstChild ?? "",
-    }
+    // const document = {
+    //   ...doc,
+    //   documentElement: doc,
+    //   firstChild: doc.firstChild ?? "",
+    // }
 
-    const article = new Readability(document).parse()!
+    const article = new Readability(doc.firstElementChild).parse()!
 
     return c.html(article.content)
   }
