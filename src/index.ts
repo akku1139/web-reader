@@ -31,14 +31,13 @@ const app = new Hono()
 
     console.log(doc.getElementsByTagName("img"))
 
-    // const document = {
-    //   ...doc.firstElementChild,
-    //   documentElement: doc.firstElementChild,
-    //   firstChild: doc.firstChild ?? "",
-    // }
+    const document = {
+      ...doc.firstElementChild,
+      // documentElement: doc.firstElementChild,
+      // firstChild: doc.firstChild ?? "",
+    }
 
-    // const read = new Readability(document)
-    const read = new Readability(doc)
+    const read = new Readability(document)
     console.log(read._doc)
     const article = read.parse()!
 
