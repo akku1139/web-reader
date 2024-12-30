@@ -10,4 +10,4 @@ await esbuild.build({
   outfile: "./public/_worker.js"
 })
 
-fs.copyFileSync("./public/_worker.js","./public/raw.js")
+fs.copyFileSync("./public/_worker.js","./public/static/raw.js")
