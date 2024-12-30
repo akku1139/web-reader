@@ -30,6 +30,8 @@ const app = new Hono()
 
     // console.log(doc.getElementsByTagName, typeof doc.getElementsByTagName, doc.firstElementChild)
 
+    console.log(doc.getElementsByTagName("img"))
+
     const document = {
       ...doc.firstElementChild,
       documentElement: doc.firstElementChild,
