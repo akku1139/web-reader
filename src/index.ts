@@ -30,13 +30,13 @@ const app = new Hono()
 
     // console.log(doc.getElementsByTagName, typeof doc.getElementsByTagName, doc.firstElementChild)
 
-    // const document = {
-    //   ...doc,
-    //   documentElement: doc,
-    //   firstChild: doc.firstChild ?? "",
-    // }
+    const document = {
+      ...doc.firstElementChild,
+      documentElement: doc.firstElementChild,
+      firstChild: doc.firstChild ?? "",
+    }
 
-    const article = new Readability(doc.firstElementChild).parse()!
+    const article = new Readability(document).parse()!
 
     return c.html(article.content)
   }
