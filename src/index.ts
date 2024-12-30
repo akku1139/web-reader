@@ -41,7 +41,7 @@ const app = new Hono()
 )
 .onError((e, c) => {
   console.error(e)
-  return c.text(`name: ${e.name}, msg: ${e.message}, stack: ${e.stack}, cuse: ${e.cause}\n${JSON.stringify(e)}`)
+  return c.text(`name: ${e.name}, nmsg: ${e.message}\nstack: ${e.stack},`)
 })
 
 export default app
