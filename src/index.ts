@@ -7,6 +7,7 @@ const app = new Hono()
 .get("/read",
   validator("query", (v, c) => {
     const url = v["url"]
+    console.log("debug url:", url)
     if (!url) {
       return c.text("error (URL is not set)", 400)
     }
