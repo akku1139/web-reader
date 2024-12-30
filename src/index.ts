@@ -28,6 +28,8 @@ const app = new Hono()
     //const doc = htmlparser2.parseDocument(rawDoc)
     const doc = htmlparser.parse(rawDoc)
 
+    console.log(Object.keys(doc))
+
     const document = {
       ...doc,
       documentElement: doc,
