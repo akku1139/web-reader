@@ -29,15 +29,15 @@ const app = new Hono()
 
     // console.log(doc.getElementsByTagName, typeof doc.getElementsByTagName, doc.firstElementChild)
 
-    console.log(doc.getElementsByTagName("img"))
+    // console.log(doc.getElementsByTagName("img"))
 
     const document = {
       // ...doc.firstElementChild,
       // documentElement: doc.firstElementChild,
       // firstChild: doc.firstChild ?? "",
       ...doc,
-      documentElement: doc.firstElementChild,
-      // firstChild: doc.firstChild ?? "",
+      documentElement: doc,
+      firstChild: doc.firstChild ?? "",
     }
 
     const read = new Readability(document)
