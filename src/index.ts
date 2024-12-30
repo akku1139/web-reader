@@ -38,7 +38,9 @@ const app = new Hono()
       firstChild: doc.firstChild ?? "",
     }
 
-    const article = new Readability(document).parse()!
+    const read = new Readability(document)
+    console.log(read._doc)
+    const article = read.parse()!
 
     return c.html(article.content)
   }
