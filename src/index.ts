@@ -28,8 +28,6 @@ const app = new Hono()
     //const doc = htmlparser2.parseDocument(rawDoc)
     const doc = htmlparser.parse(rawDoc)
 
-    console.log("debug:", typeof doc.firstChild)
-
     const document = {
       ...doc,
       documentElement: doc,
@@ -43,7 +41,7 @@ const app = new Hono()
 )
 .onError((e, c) => {
   console.error(e)
-  return c.text(`name: ${e.name}, msg: ${e.message}`)
+  return c.text(`name: ${e.name}, msg: ${e.message}, stack: ${e.stack}, cuse: ${e.cause}\n${JSON.stringify(e)}`)
 })
 
 export default app
