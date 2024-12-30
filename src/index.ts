@@ -28,11 +28,12 @@ const app = new Hono()
     //const doc = htmlparser2.parseDocument(rawDoc)
     const doc = htmlparser.parse(rawDoc)
 
-    console.log("debug:", doc, doc.firstChild, doc.documentElement, typeof doc)
+    console.log("debug:", typeof doc.firstChild)
 
     const document = {
-      documentElement: doc,
       ...doc,
+      documentElement: doc,
+      firstChild: doc.firstChild ?? "",
     }
 
     const article = new Readability(document).parse()!
