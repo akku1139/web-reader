@@ -1,8 +1,7 @@
 import { Hono } from "hono"
 import { validator } from "hono/validator"
 import { Readability } from "@mozilla/readability"
-import * as htmlparser2 from "htmlparser2"
-//import * as htmlparser from "node-html-parser"
+import * as htmlparser from "node-html-parser"
 
 const app = new Hono()
 .get("/read",
@@ -24,8 +23,7 @@ const app = new Hono()
   async c => {
     const { url } = c.req.valid("query")
     const rawDoc = await (await fetch(url)).text()
-    const doc = htmlparser2.parseDocument(rawDoc)
-    //const doc = htmlparser.parse(rawDoc)
+    const doc = htmlparser.parse(rawDoc)
 
     // console.log(doc.getElementsByTagName, typeof doc.getElementsByTagName, doc.firstElementChild)
 
