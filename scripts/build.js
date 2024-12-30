@@ -1,5 +1,6 @@
 //@ts-check
 import esbuild from "esbuild"
+import fs from "node:fs"
 
 await esbuild.build({
   entryPoints: ["./src/index.ts"],
@@ -8,3 +9,5 @@ await esbuild.build({
   format: "esm",
   outfile: "./public/_worker.js"
 })
+
+fs.copyFileSync("./public/_worker.js","./public/raw.js")
