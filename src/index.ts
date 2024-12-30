@@ -26,7 +26,10 @@ const app = new Hono()
     const rawDoc = await (await fetch(url)).text()
     // const document = htmlparser2.parseDocument(rawDoc)
     const document = htmlparser.parse(rawDoc)
-    const article = new Readability(document).parse()!
+    const article = new Readability({
+      documentElement: document,
+      ...document,
+    }).parse()!
 
     return c.html(article.content)
   }
