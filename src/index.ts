@@ -29,5 +29,9 @@ const app = new Hono()
     return c.html(article.content)
   }
 )
+.onError((e, c) => {
+  console.error(e)
+  return c.text(`name: ${e.name}, msg: ${e.message}`)
+})
 
 export default app
