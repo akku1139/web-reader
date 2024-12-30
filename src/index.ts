@@ -28,7 +28,7 @@ const app = new Hono()
     //const doc = htmlparser2.parseDocument(rawDoc)
     const doc = htmlparser.parse(rawDoc)
 
-    console.log(typeof doc.getElementsByTagName)
+    console.log(doc.getElementsByTagName, typeof doc.getElementsByTagName, doc.firstElementChild)
 
     const document = {
       ...doc,
