@@ -6,7 +6,7 @@
     "build": "node scripts/build.js"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20241205.0",
+    "@cloudflare/workers-types": "^5.20260706.1",
     "esbuild": "^0.28.0"
   },
   "peerDependencies": {
