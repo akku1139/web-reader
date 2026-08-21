@@ -1,0 +1,79 @@
+:root {
+  color-scheme: light dark;
+  --fg: #1a1a1a;
+  --bg: #fdfdfd;
+  --muted: #666;
+  --link: #0b5fff;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fg: #ddd;
+    --bg: #16181d;
+    --muted: #999;
+    --link: #7aa7ff;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0 auto;
+  max-width: 42rem;
+  padding: 1rem;
+  font-family: system-ui, -apple-system, "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+  line-height: 1.8;
+  color: var(--fg);
+  background: var(--bg);
+}
+
+.reader-header h1 {
+  font-size: 1.5rem;
+  line-height: 1.4;
+  margin: 0.5rem 0;
+}
+.reader-header a {
+  color: inherit;
+  text-decoration: none;
+}
+.meta {
+  color: var(--muted);
+  margin: 0.2rem 0;
+  font-size: 0.9rem;
+}
+
+.reader-content img,
+.reader-content video,
+.reader-content svg {
+  display: none; /* text only */
+}
+.reader-content pre {
+  overflow-x: auto;
+  padding: 0.75rem;
+  background: rgba(127, 127, 127, 0.12);
+  border-radius: 6px;
+}
+.reader-content code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9em;
+}
+.reader-content table {
+  border-collapse: collapse;
+  max-width: 100%;
+}
+.reader-content td,
+.reader-content th {
+  border: 1px solid rgba(127, 127, 127, 0.4);
+  padding: 0.25rem 0.5rem;
+}
+
+.reader-footer,
+.reader-footer a {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+a {
+  color: var(--link);
+}

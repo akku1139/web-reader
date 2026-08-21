@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>web-reader</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+<h1>web-reader</h1>
+<p>JavaScriptなしでWebサイトをテキストだけで読むためのシンプルなリーダー</p>
+</header>
+<form method="get" action="/read">
+<input type="url" name="url" placeholder="https://example.com" required
+  style="width:100%;padding:0.5rem;font-size:1rem">
+<button type="submit" style="width:100%;padding:0.5rem;font-size:1rem;margin-top:0.5rem">読む</button>
+</form>
+</body>
+</html>
