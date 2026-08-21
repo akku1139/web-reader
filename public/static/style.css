@@ -74,6 +74,14 @@ body {
   font-size: 0.85rem;
 }
 
+.reader-content a.direct-link {
+  font-size: 0.7em;
+  vertical-align: super;
+  margin-left: 0.15em;
+  text-decoration: none;
+  color: var(--muted);
+}
+
 a {
   color: var(--link);
 }

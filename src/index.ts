@@ -3,6 +3,48 @@ import { validator } from "hono/validator"
 import { Readability } from "@mozilla/readability"
 import { parseHTML } from "linkedom"
 
+/**
+ * Rewrite links inside the extracted article so that clicking a link keeps
+ * reading within web-reader (/read?url=...).
+ * - Fragment-only links (#foo) are kept as-is.
+ * - mailto:/tel:/javascript: etc. are neutralized to plain text.
+ * - Each rewritten link gets a small superscript "⧉" linking directly to the
+ *   original URL.
+ */
+function rewriteLinks(content: string, baseUrl: string): string {
+  const { document } = parseHTML(`<div id="__web-reader-wrap">${content}</div>`)
+  const wrap = document.querySelector("#__web-reader-wrap")!
+  for (const a of wrap.querySelectorAll("a[href]")) {
+    const raw = a.getAttribute("href") ?? ""
+    if (raw.startsWith("#")) continue
+
+    let abs: URL
+    try {
+      abs = new URL(raw, baseUrl)
+    } catch {
+      a.replaceWith(...a.childNodes)
+      continue
+    }
+
+    if (!/^https?:/.test(abs.href)) {
+      // mailto:, tel:, etc. -> keep the text but drop the link
+      a.replaceWith(...a.childNodes)
+      continue
+    }
+
+    const direct = document.createElement("a")
+    direct.href = abs.href
+    direct.className = "direct-link"
+    direct.setAttribute("rel", "noopener noreferrer")
+    direct.textContent = "⧉"
+
+    a.setAttribute("href", `/read?url=${encodeURIComponent(abs.href)}`)
+    a.setAttribute("title", abs.href)
+    a.after(direct)
+  }
+  return wrap.innerHTML
+}
+
 const app = new Hono()
 .get("/read",
   validator("query", (v, c) => {
@@ -53,7 +95,7 @@ const app = new Hono()
 
     const reader = new Readability(document, { keepClasses: false })
     const article = reader.parse()
-    if (!article) {
+    if (!article?.content) {
       return c.text("error (Failed to extract article content)", 422)
     }
 
@@ -84,7 +126,7 @@ ${meta}
 <hr>
 </header>
 <main class="reader-content">
-${article.content}
+${rewriteLinks(article.content, url)}
 </main>
 <footer class="reader-footer">
 <hr>

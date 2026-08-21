@@ -16443,6 +16443,34 @@ function Document4() {
 setPrototypeOf(Document4, Document2).prototype = Document2.prototype;
 
 // src/index.ts
+function rewriteLinks(content, baseUrl) {
+  const { document } = parseHTML(`<div id="__web-reader-wrap">${content}</div>`);
+  const wrap = document.querySelector("#__web-reader-wrap");
+  for (const a of wrap.querySelectorAll("a[href]")) {
+    const raw2 = a.getAttribute("href") ?? "";
+    if (raw2.startsWith("#")) continue;
+    let abs;
+    try {
+      abs = new URL(raw2, baseUrl);
+    } catch {
+      a.replaceWith(...a.childNodes);
+      continue;
+    }
+    if (!/^https?:/.test(abs.href)) {
+      a.replaceWith(...a.childNodes);
+      continue;
+    }
+    const direct = document.createElement("a");
+    direct.href = abs.href;
+    direct.className = "direct-link";
+    direct.setAttribute("rel", "noopener noreferrer");
+    direct.textContent = "\u29C9";
+    a.setAttribute("href", `/read?url=${encodeURIComponent(abs.href)}`);
+    a.setAttribute("title", abs.href);
+    a.after(direct);
+  }
+  return wrap.innerHTML;
+}
 var app = new Hono2().get(
   "/read",
   validator("query", (v, c) => {
@@ -16486,7 +16514,7 @@ var app = new Hono2().get(
     }
     const reader = new import_readability.Readability(document, { keepClasses: false });
     const article = reader.parse();
-    if (!article) {
+    if (!article?.content) {
       return c.text("error (Failed to extract article content)", 422);
     }
     const title = article.title ?? url;
@@ -16514,7 +16542,7 @@ ${meta}
 <hr>
 </header>
 <main class="reader-content">
-${article.content}
+${rewriteLinks(article.content, url)}
 </main>
 <footer class="reader-footer">
 <hr>
