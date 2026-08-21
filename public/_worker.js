@@ -16471,12 +16471,15 @@ function rewriteLinks(content, baseUrl) {
   }
   return wrap.innerHTML;
 }
+function toPlainText(content) {
+  return content.replaceAll(/<(script|style|noscript|template|svg)\b[^>]*>[\s\S]*?<\/\1>/gi, "").replaceAll(/<\/(p|h[1-6]|li|blockquote|pre|tr|div|section|article|figcaption|dt|dd)>/gi, "\n").replaceAll(/<br\s*\/?>/gi, "\n").replaceAll(/<li\b[^>]*>/gi, "\u2022 ").replaceAll(/<[^>]+>/g, "").replaceAll(/&nbsp;/g, " ").replaceAll(/&amp;/g, "&").replaceAll(/&lt;/g, "<").replaceAll(/&gt;/g, ">").replaceAll(/&quot;/g, '"').replaceAll(/&#0?39;/g, "'").replaceAll(/&#x27;/gi, "'").split("\n").map((line) => line.replaceAll(/\s+/g, " ").trim()).join("\n").replaceAll(/\n{3,}/g, "\n\n").trim();
+}
 var app = new Hono2().get(
   "/read",
   validator("query", (v, c) => {
     const url = v["url"];
     if (!url) {
-      return c.text("error (URL is not set)", 400);
+      return { url: "", mode: "html", links: "on" };
     }
     if (Array.isArray(url)) {
       return c.text("error (Multiple URLs are not allowed)", 400);
@@ -16488,12 +16491,20 @@ var app = new Hono2().get(
     if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
       return c.text("error (Only http/https are allowed)", 400);
     }
+    const mode = v["mode"] === "text" ? "text" : "html";
+    const links = v["links"] === "off" ? "off" : "on";
     return {
-      url
+      url,
+      mode,
+      links
     };
   }),
   async (c) => {
-    const { url } = c.req.valid("query");
+    const opts = c.req.valid("query");
+    if (!opts.url) {
+      return renderFormPage();
+    }
+    const { url, mode, links } = opts;
     const res = await fetch(url, {
       redirect: "follow",
       headers: {
@@ -16505,7 +16516,6 @@ var app = new Hono2().get(
     if (!res.ok) {
       return c.text(`error (Upstream returned ${res.status} ${res.statusText})`, 502);
     }
-    const contentType = res.headers.get("content-type") ?? "";
     const rawDoc = await res.text();
     const { document } = parseHTML(rawDoc);
     try {
@@ -16526,6 +16536,17 @@ var app = new Hono2().get(
       siteName ? `<p class="meta">${escapeHtml(siteName)}</p>` : "",
       byline ? `<p class="meta">${escapeHtml(byline)}</p>` : ""
     ].join("\n");
+    const body = mode === "text" ? `<article class="reader-text">${escapeHtml(toPlainText(article.content))}</article>` : links === "on" ? rewriteLinks(article.content, url) : article.content;
+    const q = (over) => {
+      const o = { url, mode, links, ...over };
+      return `/read?url=${encodeURIComponent(o.url)}&mode=${o.mode}&links=${o.links}`;
+    };
+    const toolbar = `<nav class="reader-toolbar">
+<a href="${q({ mode: mode === "text" ? "html" : "text" })}" class="${mode === "text" ? "active" : ""}">${mode === "text" ? "\u8A18\u4E8B\u8868\u793A" : "\u30C6\u30AD\u30B9\u30C8\u8868\u793A"}</a>
+<a href="${q({ links: links === "on" ? "off" : "on" })}" class="${links === "on" ? "active" : ""}">\u30EA\u30F3\u30AF\u52A0\u5DE5: ${links === "on" ? "ON" : "OFF"}</a>
+<a href="${escapedUrl}" rel="noopener noreferrer">\u5143\u30DA\u30FC\u30B8\u29C9</a>
+<a href="${q({})}">\u518D\u8AAD\u8FBC</a>
+</nav>`;
     return c.html(`<!doctype html>
 <html lang="ja">
 <head>
@@ -16539,15 +16560,16 @@ var app = new Hono2().get(
 <p><a href="/">\u2190 web-reader</a></p>
 <h1><a href="${escapedUrl}" rel="noopener noreferrer">${escapedTitle}</a></h1>
 ${meta}
+${toolbar}
 <hr>
 </header>
 <main class="reader-content">
-${rewriteLinks(article.content, url)}
+${body}
 </main>
 <footer class="reader-footer">
 <hr>
 <p>Extracted by <a href="https://github.com/akku1139/web-reader">web-reader</a> \xB7
-<a href="/read?url=${encodeURIComponent(url)}">reload</a></p>
+<a href="${q({})}">reload</a></p>
 </footer>
 </body>
 </html>`);
@@ -16557,6 +16579,30 @@ ${rewriteLinks(article.content, url)}
   return c.text(`name: ${e.name}, msg: ${e.message}
 stack: ${e.stack},`);
 });
+function renderFormPage() {
+  return new Response(`<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>web-reader</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="reader-header">
+<p><a href="/">\u2190 web-reader</a></p>
+<h1>web-reader</h1>
+<hr>
+</header>
+<main class="reader-content">
+<form method="get" action="/read">
+<input type="url" name="url" placeholder="https://example.com" required style="width:100%;padding:0.5rem;font-size:1rem">
+<button type="submit" style="width:100%;padding:0.5rem;font-size:1rem;margin-top:0.5rem">\u8AAD\u3080</button>
+</form>
+</main>
+</body>
+</html>`, { headers: { "content-type": "text/html; charset=UTF-8" } });
+}
 function escapeHtml(s) {
   return s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
 }

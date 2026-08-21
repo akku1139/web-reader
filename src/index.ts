@@ -3,6 +3,14 @@ import { validator } from "hono/validator"
 import { Readability } from "@mozilla/readability"
 import { parseHTML } from "linkedom"
 
+type ReaderOptions = {
+  url: string
+  /** "html": rendered article (default), "text": stripped plain text */
+  mode: "html" | "text"
+  /** "on": rewrite links to stay in the reader (default), "off": keep original hrefs */
+  links: "on" | "off"
+}
+
 /**
  * Rewrite links inside the extracted article so that clicking a link keeps
  * reading within web-reader (/read?url=...).
@@ -45,12 +53,43 @@ function rewriteLinks(content: string, baseUrl: string): string {
   return wrap.innerHTML
 }
 
+/**
+ * Strip the extracted article down to plain text, keeping paragraph breaks
+ * and list structure readable.
+ */
+function toPlainText(content: string): string {
+  return content
+    // drop elements that carry no reading content
+    .replaceAll(/<(script|style|noscript|template|svg)\b[^>]*>[\s\S]*?<\/\1>/gi, "")
+    // newline after block-level boundaries
+    .replaceAll(/<\/(p|h[1-6]|li|blockquote|pre|tr|div|section|article|figcaption|dt|dd)>/gi, "\n")
+    .replaceAll(/<br\s*\/?>/gi, "\n")
+    .replaceAll(/<li\b[^>]*>/gi, "• ")
+    // strip remaining tags
+    .replaceAll(/<[^>]+>/g, "")
+    // decode entities
+    .replaceAll(/&nbsp;/g, " ")
+    .replaceAll(/&amp;/g, "&")
+    .replaceAll(/&lt;/g, "<")
+    .replaceAll(/&gt;/g, ">")
+    .replaceAll(/&quot;/g, '"')
+    .replaceAll(/&#0?39;/g, "'")
+    .replaceAll(/&#x27;/gi, "'")
+    // normalize whitespace (keep intentional newlines)
+    .split("\n")
+    .map(line => line.replaceAll(/\s+/g, " ").trim())
+    .join("\n")
+    .replaceAll(/\n{3,}/g, "\n\n")
+    .trim()
+}
+
 const app = new Hono()
 .get("/read",
   validator("query", (v, c) => {
     const url = v["url"]
+    // no URL given: show the form page instead of an error
     if (!url) {
-      return c.text("error (URL is not set)", 400)
+      return { url: "", mode: "html" as const, links: "on" as const }
     }
     if (Array.isArray(url)) {
       return c.text("error (Multiple URLs are not allowed)", 400)
@@ -62,12 +101,20 @@ const app = new Hono()
     if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
       return c.text("error (Only http/https are allowed)", 400)
     }
+    const mode = v["mode"] === "text" ? "text" as const : "html" as const
+    const links = v["links"] === "off" ? "off" as const : "on" as const
     return {
-      url
-    }
+      url,
+      mode,
+      links,
+    } satisfies ReaderOptions
   }),
   async c => {
-    const { url } = c.req.valid("query")
+    const opts = c.req.valid("query")
+    if (!opts.url) {
+      return renderFormPage()
+    }
+    const { url, mode, links } = opts
 
     const res = await fetch(url, {
       redirect: "follow",
@@ -82,7 +129,6 @@ const app = new Hono()
       return c.text(`error (Upstream returned ${res.status} ${res.statusText})`, 502)
     }
 
-    const contentType = res.headers.get("content-type") ?? ""
     const rawDoc = await res.text()
 
     // linkedom provides a real DOM Document that Readability requires
@@ -110,6 +156,24 @@ const app = new Hono()
       byline ? `<p class="meta">${escapeHtml(byline)}</p>` : "",
     ].join("\n")
 
+    const body = mode === "text"
+      ? `<article class="reader-text">${escapeHtml(toPlainText(article.content))}</article>`
+      : links === "on"
+        ? rewriteLinks(article.content, url)
+        : article.content
+
+    // toolbar: plain <a> toggles, no JavaScript involved
+    const q = (over: Partial<ReaderOptions>) => {
+      const o = { url, mode, links, ...over }
+      return `/read?url=${encodeURIComponent(o.url)}&mode=${o.mode}&links=${o.links}`
+    }
+    const toolbar = `<nav class="reader-toolbar">
+<a href="${q({ mode: mode === "text" ? "html" : "text" })}" class="${mode === "text" ? "active" : ""}">${mode === "text" ? "記事表示" : "テキスト表示"}</a>
+<a href="${q({ links: links === "on" ? "off" : "on" })}" class="${links === "on" ? "active" : ""}">リンク加工: ${links === "on" ? "ON" : "OFF"}</a>
+<a href="${escapedUrl}" rel="noopener noreferrer">元ページ⧉</a>
+<a href="${q({})}">再読込</a>
+</nav>`
+
     return c.html(`<!doctype html>
 <html lang="ja">
 <head>
@@ -123,15 +187,16 @@ const app = new Hono()
 <p><a href="/">← web-reader</a></p>
 <h1><a href="${escapedUrl}" rel="noopener noreferrer">${escapedTitle}</a></h1>
 ${meta}
+${toolbar}
 <hr>
 </header>
 <main class="reader-content">
-${rewriteLinks(article.content, url)}
+${body}
 </main>
 <footer class="reader-footer">
 <hr>
 <p>Extracted by <a href="https://github.com/akku1139/web-reader">web-reader</a> ·
-<a href="/read?url=${encodeURIComponent(url)}">reload</a></p>
+<a href="${q({})}">reload</a></p>
 </footer>
 </body>
 </html>`)
@@ -141,6 +206,32 @@ ${rewriteLinks(article.content, url)}
   console.error(e)
   return c.text(`name: ${e.name}, msg: ${e.message}\nstack: ${e.stack},`)
 })
+
+/** No-JS form page shown when /read is opened without ?url= */
+function renderFormPage(): Response {
+  return new Response(`<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>web-reader</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="reader-header">
+<p><a href="/">← web-reader</a></p>
+<h1>web-reader</h1>
+<hr>
+</header>
+<main class="reader-content">
+<form method="get" action="/read">
+<input type="url" name="url" placeholder="https://example.com" required style="width:100%;padding:0.5rem;font-size:1rem">
+<button type="submit" style="width:100%;padding:0.5rem;font-size:1rem;margin-top:0.5rem">読む</button>
+</form>
+</main>
+</body>
+</html>`, { headers: { "content-type": "text/html; charset=UTF-8" } })
+}
 
 function escapeHtml(s: string): string {
   return s

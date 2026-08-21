@@ -68,6 +68,30 @@ body {
   padding: 0.25rem 0.5rem;
 }
 
+/* toolbar: small, muted, non-intrusive */
+.reader-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  margin: 0.5rem 0;
+}
+.reader-toolbar a {
+  color: var(--muted);
+  text-decoration: none;
+}
+.reader-toolbar a.active {
+  color: var(--fg);
+  font-weight: 600;
+  text-decoration: underline dotted;
+}
+
+.reader-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: inherit;
+}
+
 .reader-footer,
 .reader-footer a {
   color: var(--muted);
