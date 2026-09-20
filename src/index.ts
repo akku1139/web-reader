@@ -202,6 +202,38 @@ ${body}
 </html>`)
   }
 )
+.get("/readability", async c => {
+  const url = c.req.query('url')
+  if (!url || !URL.canParse(url)) {
+    return c.text('url error', 400)
+  }
+  const httpRes = await fetch(url, {
+    redirect: "follow",
+    headers: {
+      "User-Agent":
+        "Mozilla/5.0 (compatible; web-reader; +https://github.com/akku1139/web-reader)",
+      "Accept": "text/html,application/xhtml+xml",
+    },
+  })
+  console.log(
+    `fetch result (${url}):`,
+    httpRes.status,
+    '(',
+    httpRes.ok,
+    ')',
+  )
+  const text = await httpRes.text()
+  const { document } = parseHTML(text)
+  const reader = new Readability(document)
+  const result = reader.parse()
+  const res = c.json({
+    ...result,
+    http_status: httpRes.status,
+    // raw: text,
+    textContent: void 0,
+  })
+  return res
+})
 .onError((e, c) => {
   console.error(e)
   return c.text(`name: ${e.name}, msg: ${e.message}\nstack: ${e.stack},`)
