@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@mozilla/readability": "^0.6.0",
-    "hono": "^4.13.14",
+    "hono": "^4.13.16",
     "linkedom": "^0.18.14"
   }
 }
