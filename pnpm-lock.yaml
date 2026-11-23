@@ -22,16 +22,16 @@ importers:
         version: 5.9.3
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20261113.1
-        version: 5.20261113.1
+        specifier: ^5.20261120.1
+        version: 5.20261120.1
       esbuild:
         specifier: ^0.28.0
         version: 0.28.2
 
 packages:
 
-  '@cloudflare/workers-types@5.20261113.1':
-    resolution: {integrity: sha512-FhF8hRtsQCr/BWZyUN7wm2x+jqAOkRIpLOW+2fJu5OQyIDOv+c3PxY8duEAkOYXuprLImxjW+PHTbvz9+Px5cw==}
+  '@cloudflare/workers-types@5.20261120.1':
+    resolution: {integrity: sha512-bpaDXQ1oYqWhLCAqV5fO0pPB2tduDEEFyIMedZVi0NqzW/7T8DlJ8hUe3DqoDG1RQ8X7zTbK555Qr9yAyyUhmQ==}
 
   '@esbuild/aix-ppc64@0.28.2':
     resolution: {integrity: sha512-XExcO+dvLKvVtNTibSTBej1NCAbaGhWn9Ww1ZPx80qsahhPFe/8jgWP0IchNe0F3HwkU7n8ejhH8bjonqht8mQ==}
@@ -288,7 +288,7 @@ packages:
 
 snapshots:
 
-  '@cloudflare/workers-types@5.20261113.1': {}
+  '@cloudflare/workers-types@5.20261120.1': {}
 
   '@esbuild/aix-ppc64@0.28.2':
     optional: true
